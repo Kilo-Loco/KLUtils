@@ -136,7 +136,7 @@ extension OneTimeCodeField: UITextFieldDelegate {
 // SwiftUI wrapper for the OneTimeCodeField
 public struct OneTimeCodeFieldView: UIViewRepresentable {
     public var slotCount: Int
-    public var defaultCharacter: String = " "
+    public var defaultCharacter: String
     public var didHitEnter: ((String) -> Void)?
     public var didEnterLastDigit: ((String) -> Void)?
     
@@ -168,5 +168,12 @@ public struct OneTimeCodeFieldView: UIViewRepresentable {
             let characterCount = currentText.count
             return characterCount < parent.slotCount || string.isEmpty
         }
+    }
+    
+    public init(slotCount: Int, defaultCharacter: String = " ", didHitEnter: ((String) -> Void)? = nil, didEnterLastDigit: ((String) -> Void)? = nil) {
+        self.slotCount = slotCount
+        self.defaultCharacter = defaultCharacter
+        self.didHitEnter = didHitEnter
+        self.didEnterLastDigit = didEnterLastDigit
     }
 }
