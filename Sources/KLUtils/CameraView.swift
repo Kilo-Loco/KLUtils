@@ -21,6 +21,10 @@ public struct CameraView: UIViewControllerRepresentable {
     
     public typealias UIViewControllerType = UIImagePickerController
     
+    public init(mediaType: Binding<CameraMediaType>) {
+        self._mediaType = mediaType
+    }
+    
     public func makeCoordinator() -> CameraPickerCoordinator {
         CameraPickerCoordinator(cameraPicker: self)
     }

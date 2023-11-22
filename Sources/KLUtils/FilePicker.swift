@@ -23,6 +23,10 @@ public struct FilePicker: UIViewControllerRepresentable {
     
     public typealias UIViewControllerType = PHPickerViewController
     
+    public init(selectedFile: Binding<SelectedFileType>) {
+        self._selectedFile = selectedFile
+    }
+    
     public func makeCoordinator() -> FilePickerCoordinator {
         FilePickerCoordinator(filePicker: self)
     }
