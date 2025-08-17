@@ -1,12 +1,30 @@
 import XCTest
+import AVFoundation
 @testable import KLUtils
 
 final class KLUtilsTests: XCTestCase {
-    func testExample() throws {
-        // XCTest Documentation
-        // https://developer.apple.com/documentation/xctest
+    var audioRecorder: AudioRecorder!
 
-        // Defining Test Cases and Test Methods
-        // https://developer.apple.com/documentation/xctest/defining_test_cases_and_test_methods
+    override func setUp() {
+        self.audioRecorder = .init()
+    }
+
+    override func tearDown() {
+        self.audioRecorder = nil
+    }
+
+    func testAudioRecorder_recordingSessionIsSetup() {
+        XCTAssertEqual( self.audioRecorder.recordingSession.category, .playAndRecord)
+    }
+
+    func testAudioRecorder_startRecording() {
+        self.audioRecorder.startRecording()
+        XCTAssertTrue(self.audioRecorder.isRecording)
+    }
+
+    func testAudioRecorder_stopRecording() {
+        self.audioRecorder.startRecording()
+        self.audioRecorder.stopRecording()
+        XCTAssertFalse(self.audioRecorder.isRecording)
     }
 }

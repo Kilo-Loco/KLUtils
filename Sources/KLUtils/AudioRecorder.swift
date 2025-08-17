@@ -8,18 +8,38 @@
 import AVFoundation
 import Combine
 
-class AudioRecorder: NSObject, ObservableObject {
+public class AudioRecorder: NSObject, ObservableObject {
     var audioRecorder: AVAudioRecorder?
     var recordingSession: AVAudioSession = AVAudioSession.sharedInstance()
     var audioLevel: Float = 0.0
     var isRecording = false
 
-    override init() {
+    private var timer: Timer?
+
+    public override init() {
         super.init()
         setupRecordingSession()
     }
 
-    func startRecording() {
+    private func setupRecordingSession() {
+        do {
+            try recordingSession.setCategory(.playAndRecord, mode: .default)
+            try recordingSession.setActive(true)
+            recordingSession.requestRecordPermission() { allowed in
+                DispatchQueue.main.async {
+                    if !allowed {
+                        // Handle the failure to get permission
+                        print("Error: Permission for recording audio has not been granted")
+                    }
+                }
+            }
+        } catch {
+            // Handle the error
+            print("Error: \(error)")
+        }
+    }
+
+    public func startRecording() {
         let audioFilename = getDocumentsDirectory().appendingPathComponent("recording.m4a")
 
         let settings = [
@@ -42,25 +62,10 @@ class AudioRecorder: NSObject, ObservableObject {
         }
     }
 
-    func stopRecording() {
+    public func stopRecording() {
         audioRecorder?.stop()
         isRecording = false
-    }
-
-    private func setupRecordingSession() {
-        do {
-            try recordingSession.setCategory(.playAndRecord, mode: .default)
-            try recordingSession.setActive(true)
-            recordingSession.requestRecordPermission() { allowed in
-                DispatchQueue.main.async {
-                    if !allowed {
-                        // Handle the failure to get permission
-                    }
-                }
-            }
-        } catch {
-            // Handle the error
-        }
+        stopMetering()
     }
 
     private func getDocumentsDirectory() -> URL {
@@ -69,8 +74,8 @@ class AudioRecorder: NSObject, ObservableObject {
     }
 
     private func startMetering() {
-        Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { [weak self] timer in
-            guard let self = self, self.isRecording else {
+        self.timer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { [weak self] timer in
+            guard let self, self.isRecording else {
                 timer.invalidate()
                 return
             }
@@ -79,6 +84,11 @@ class AudioRecorder: NSObject, ObservableObject {
             self.audioLevel = self.audioRecorder?.averagePower(forChannel: 0) ?? 0.0
             // Update waveform view here
         }
+    }
+
+    private func stopMetering() {
+        guard self.timer?.isValid == true else { return }
+        self.timer?.invalidate()
     }
 }
 
