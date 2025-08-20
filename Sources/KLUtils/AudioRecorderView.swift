@@ -18,7 +18,7 @@ struct AudioRecorderView: View {
                 if self.isRecording {
                     self.audioRecorder.stopRecording()
                 } else {
-                    self.audioRecorder.startRecording()
+                    self.audioRecorder.startRecording(in: "recording.m4a")
                 }
                 self.isRecording.toggle()
             }) {

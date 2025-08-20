@@ -4,6 +4,7 @@ import AVFoundation
 
 final class KLUtilsTests: XCTestCase {
     var audioRecorder: AudioRecorder!
+    let recordingFileName: String = "rec.m4a"
 
     override func setUp() {
         self.audioRecorder = .init()
@@ -14,16 +15,17 @@ final class KLUtilsTests: XCTestCase {
     }
 
     func testAudioRecorder_recordingSessionIsSetup() {
-        XCTAssertEqual( self.audioRecorder.recordingSession.category, .playAndRecord)
+        XCTAssertEqual( self.audioRecorder.audioSession.category, .playAndRecord)
     }
 
     func testAudioRecorder_startRecording() {
-        self.audioRecorder.startRecording()
+        
+        self.audioRecorder.startRecording(in: recordingFileName)
         XCTAssertTrue(self.audioRecorder.isRecording)
     }
 
     func testAudioRecorder_stopRecording() {
-        self.audioRecorder.startRecording()
+        self.audioRecorder.startRecording(in: recordingFileName)
         self.audioRecorder.stopRecording()
         XCTAssertFalse(self.audioRecorder.isRecording)
     }

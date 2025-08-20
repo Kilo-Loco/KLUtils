@@ -10,7 +10,8 @@ import Combine
 
 public class AudioRecorder: NSObject, ObservableObject {
     var audioRecorder: AVAudioRecorder?
-    var recordingSession: AVAudioSession = AVAudioSession.sharedInstance()
+    var audioPlayer: AVAudioPlayer?
+    var audioSession: AVAudioSession = AVAudioSession.sharedInstance()
     var audioLevel: Float = 0.0
     var isRecording = false
 
@@ -23,9 +24,10 @@ public class AudioRecorder: NSObject, ObservableObject {
 
     private func setupRecordingSession() {
         do {
-            try recordingSession.setCategory(.playAndRecord, mode: .default)
-            try recordingSession.setActive(true)
-            recordingSession.requestRecordPermission() { allowed in
+            try audioSession.setCategory(.playAndRecord, mode: .default)
+            try audioSession.overrideOutputAudioPort(.speaker)
+            try audioSession.setActive(true)
+            audioSession.requestRecordPermission() { allowed in
                 DispatchQueue.main.async {
                     if !allowed {
                         // Handle the failure to get permission
@@ -39,8 +41,10 @@ public class AudioRecorder: NSObject, ObservableObject {
         }
     }
 
-    public func startRecording() {
-        let audioFilename = getDocumentsDirectory().appendingPathComponent("recording.m4a")
+    /// Starts recording in the object's AudioRecorder
+    /// - parameter filename: The name of the file, including the file extension (i.e. "rec.m4a")
+    public func startRecording(in filename: String) {
+        let audioFilename = getDocumentsDirectory().appendingPathComponent(filename)
 
         let settings = [
             AVFormatIDKey: Int(kAudioFormatMPEG4AAC),
@@ -90,9 +94,26 @@ public class AudioRecorder: NSObject, ObservableObject {
         guard self.timer?.isValid == true else { return }
         self.timer?.invalidate()
     }
+    
+    public func playRecording(at filename: String) {
+        let audioFilename = getDocumentsDirectory().appendingPathComponent(filename)
+
+        do {
+            audioPlayer = try AVAudioPlayer(contentsOf: audioFilename)
+            audioPlayer?.delegate = self
+            audioPlayer?.prepareToPlay()
+            audioPlayer?.play()
+            print("Playing recording at:", audioFilename.path)
+        } catch {
+            print("Error playing recording:", error)
+        }
+    }
 }
 
-extension AudioRecorder: AVAudioRecorderDelegate {
+extension AudioRecorder: AVAudioRecorderDelegate, AVAudioPlayerDelegate {
     // Implement delegate methods if needed
+    public func audioRecorderDidFinishRecording(_ recorder: AVAudioRecorder, successfully flag: Bool) {
+        print("did finish recording successfully: \(flag)")
+    }
 }
 
